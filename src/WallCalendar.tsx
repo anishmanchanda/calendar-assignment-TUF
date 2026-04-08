@@ -1,5 +1,8 @@
 "use client";
 
+import type { ThemeKey, Theme, MonthStyle, DatePoint, NotesStore, NoteMarker, DayPreview, CalendarCell, FlipStage, StaticMonthSnapshot, NotesListItem } from './types';
+import { MONTHS, SHORT_MONTHS, HOLIDAYS } from './types';
+
 import {
   memo,
   useCallback,
@@ -22,106 +25,6 @@ import {
   faWandMagicSparkles,
 } from "@fortawesome/free-solid-svg-icons";
 import "./WallCalendar.css";
-
-type ThemeKey = "blue" | "teal" | "amber" | "rose" | "slate";
-
-interface Theme {
-  main: string;
-  dark: string;
-  light: string;
-}
-
-interface MonthPalette {
-  main: string;
-  dark: string;
-  light: string;
-  surface: string;
-  ink: string;
-  accent: string;
-  glow: string;
-}
-
-interface MonthStyle {
-  destination: string;
-  country: string;
-  season: string;
-  palette: MonthPalette;
-  heroSrc: string;
-  heroPosition: string;
-}
-
-interface DatePoint {
-  y: number;
-  m: number;
-  d: number;
-}
-
-interface NotesStore {
-  [key: string]: string[];
-}
-
-type NoteMarker = "single" | "range" | "mixed" | null;
-
-interface DayPreview {
-  hasSingle: boolean;
-  hasRange: boolean;
-  preview: string[];
-  totalCount: number;
-}
-
-interface CalendarCell {
-  key: string;
-  day: number;
-  date: DatePoint;
-  isOtherMonth: boolean;
-  isToday: boolean;
-  isWeekend: boolean;
-}
-
-type FlipStage = "next" | "prev" | null;
-
-const MONTHS = [
-  "JANUARY",
-  "FEBRUARY",
-  "MARCH",
-  "APRIL",
-  "MAY",
-  "JUNE",
-  "JULY",
-  "AUGUST",
-  "SEPTEMBER",
-  "OCTOBER",
-  "NOVEMBER",
-  "DECEMBER",
-] as const;
-
-const SHORT_MONTHS = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-] as const;
-
-const HOLIDAYS: Record<string, string> = {
-  "2026-1-1": "New Year's Day",
-  "2026-1-26": "Republic Day",
-  "2026-3-14": "Holi",
-  "2026-4-14": "Dr. Ambedkar Jayanti",
-  "2026-5-1": "Labour Day",
-  "2026-8-15": "Independence Day",
-  "2026-10-2": "Gandhi Jayanti",
-  "2026-10-20": "Dussehra",
-  "2026-11-5": "Diwali",
-  "2026-12-25": "Christmas Day",
-};
 
 const THEMES: Record<ThemeKey, Theme> = {
   blue: { main: "#1a85d6", dark: "#0e5fa0", light: "#e8f4fd" },
@@ -486,16 +389,6 @@ function getMarkerType(preview: DayPreview | undefined): NoteMarker {
   return null;
 }
 
-interface StaticMonthSnapshot {
-  year: number;
-  month: number;
-  monthStyle: MonthStyle;
-  holidays: Record<number, string>;
-  weeks: CalendarCell[][];
-  monthNotesCount: number;
-  dayPreviews: Map<number, DayPreview>;
-}
-
 function buildCalendarWeeks(year: number, month: number, today: Date): CalendarCell[][] {
   const firstDayOfWeek = new Date(year, month, 1).getDay();
   const startOffset = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
@@ -586,11 +479,6 @@ function SpiralBinding() {
       ))}
     </div>
   );
-}
-
-interface NotesListItem {
-  key: string;
-  notes: string[];
 }
 
 interface NotesListProps {
