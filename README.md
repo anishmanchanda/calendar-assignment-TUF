@@ -2,7 +2,7 @@
 
 A wall calendar built with React + TypeScript + Vite. Looks like an actual paper calendar hanging on a wall.
 
-<img width="1366" height="768" alt="image" src="https://github.com/user-attachments/assets/d36b54f7-c7f1-47b3-91ab-78103c8d4768" />
+<img width="1366" height="768" alt="image" src="SCR-20260409-etil.jpeg" />
 
 ## ✨ Features & Enhancements
 
