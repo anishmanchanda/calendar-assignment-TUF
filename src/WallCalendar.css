@@ -186,19 +186,19 @@
 }
 
 .wc-card--flip-out-next {
-  animation: wc-flip-out-next 0.4s cubic-bezier(0.22, 0.8, 0.24, 1) forwards;
+  animation: wc-flip-out-next 0.6s cubic-bezier(0.22, 0.8, 0.24, 1) forwards;
 }
 
 .wc-card--flip-in-next {
-  animation: wc-flip-in-next 0.38s cubic-bezier(0.22, 0.72, 0.2, 1) forwards;
+  animation: wc-flip-in-next 0.58s cubic-bezier(0.22, 0.72, 0.2, 1) forwards;
 }
 
 .wc-card--flip-out-prev {
-  animation: wc-flip-out-prev 0.4s cubic-bezier(0.22, 0.8, 0.24, 1) forwards;
+  animation: wc-flip-out-prev 0.6s cubic-bezier(0.22, 0.8, 0.24, 1) forwards;
 }
 
 .wc-card--flip-in-prev {
-  animation: wc-flip-in-prev 0.38s cubic-bezier(0.22, 0.72, 0.2, 1) forwards;
+  animation: wc-flip-in-prev 0.6s cubic-bezier(0.22, 0.72, 0.2, 1) forwards;
 }
 
 .wc-hero {
@@ -233,11 +233,11 @@
 }
 
 .wc-cover-wrap--fading {
-  animation: wc-crossfade-out 0.4s ease forwards;
+  animation: wc-crossfade-out 0.6s ease forwards;
 }
 
 .wc-cover-wrap--current {
-  animation: wc-crossfade-in 0.4s ease;
+  animation: wc-crossfade-in 0.6s ease;
 }
 
 @keyframes wc-crossfade-out {
@@ -844,6 +844,8 @@ button.wc-chip:hover {
   color: var(--wc-ink);
   cursor: pointer;
   padding: 0;
+  appearance: none;
+  -webkit-appearance: none;
   transition:
     transform 0.16s ease,
     background 0.16s ease,
@@ -853,12 +855,14 @@ button.wc-chip:hover {
 }
 
 .wc-day:hover:not(:disabled),
-.wc-day:focus-visible {
+.wc-day:focus-visible,
+.wc-day:focus {
   outline: none;
   transform: translateY(-1px);
   background: rgba(255, 255, 255, 0.92);
   border-color: color-mix(in srgb, var(--wc-main) 18%, transparent);
   box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+  z-index: 40;
 }
 
 .wc-day:disabled {
@@ -896,8 +900,35 @@ button.wc-chip:hover {
   box-shadow: 0 10px 20px color-mix(in srgb, var(--wc-main) 22%, transparent);
 }
 
+.wc-day--start:hover:not(:disabled),
+.wc-day--start:focus,
+.wc-day--start:focus-visible,
+.wc-day--start:active,
+.wc-day--start.wc-day--focused,
+.wc-day--start.wc-day--preview-open,
+.wc-day--end:hover:not(:disabled),
+.wc-day--end:focus,
+.wc-day--end:focus-visible {
+  background: linear-gradient(160deg, color-mix(in srgb, var(--wc-dark) 90%, white 10%), var(--wc-dark));
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 12px 24px color-mix(in srgb, var(--wc-main) 28%, transparent);
+  transform: translateY(-2px);
+  z-index: 40;
+}
+
+.wc-day--start .wc-day-label,
+.wc-day--end .wc-day-label {
+  color: #fff;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.12);
+}
+
 .wc-day--start {
   border-radius: 18px 8px 8px 18px;
+}
+
+.wc-day--start:not(.wc-day--end) {
+  border-radius: 18px;
 }
 
 .wc-day--end {

@@ -18,8 +18,6 @@ import {
   faChevronDown,
   faChevronLeft,
   faChevronRight,
-  faKeyboard,
-  faWandMagicSparkles,
 } from "@fortawesome/free-solid-svg-icons";
 import "./WallCalendar.css";
 
@@ -392,9 +390,9 @@ function chunk<T>(items: T[], size: number): T[][] {
 }
 
 const LS_KEY = "wc-notes";
-const FLIP_OUT_MS = 400;
-const FLIP_IN_MS = 380;
-const HERO_CROSSFADE_MS = 400;
+const FLIP_OUT_MS = 600;
+const FLIP_IN_MS = 600;
+const HERO_CROSSFADE_MS = 600;
 
 function dateKey(dt: DatePoint): string {
   return `${dt.y}-${dt.m + 1}-${dt.d}`;
@@ -702,6 +700,7 @@ const DayCell = memo(function DayCell({
     noteType === "range" ? "wc-day--note-range" : "",
     noteType === "mixed" ? "wc-day--note-mixed" : "",
     isFocused ? "wc-day--focused" : "",
+    showPreview ? "wc-day--preview-open" : "",
   ]
     .filter(Boolean)
     .join(" ");
@@ -1208,9 +1207,23 @@ export default function WallCalendar({
 
   const renderStaticCard = (snapshot: StaticMonthSnapshot) => {
     const holidayEntries = Object.entries(snapshot.holidays);
+    const snapPalette = snapshot.monthStyle.palette;
+    const staticThemeVars = {
+      "--wc-main": snapPalette.main,
+      "--wc-dark": snapPalette.dark,
+      "--wc-light": snapPalette.light,
+      "--wc-surface": snapPalette.surface,
+      "--wc-ink": snapPalette.ink,
+      "--wc-glow": snapPalette.glow,
+      "--wc-accent": snapPalette.accent,
+      "--wc-range-bg": hexToRgba(snapPalette.main, 0.12),
+      "--wc-range-bd": hexToRgba(snapPalette.main, 0.24),
+      "--wc-hero-start": darken(snapPalette.dark, 0.08),
+      "--wc-hero-end": snapPalette.main,
+    } as CSSProperties;
 
     return (
-      <div className="wc-card wc-card--underlay" aria-hidden="true">
+      <div className="wc-card wc-card--underlay" aria-hidden="true" style={staticThemeVars}>
         <div className="wc-hero">
           <div
             className="wc-cover-wrap"
@@ -1226,41 +1239,47 @@ export default function WallCalendar({
             <span className="wc-destination-meta">{snapshot.monthStyle.country}</span>
             <span className="wc-year">{snapshot.year}</span>
             <span className="wc-month">{MONTHS[snapshot.month]}</span>
-            <div className="wc-nav-btns" style={{ opacity: 0, pointerEvents: 'none' }}>
-              <button className="wc-nav-btn" type="button" aria-hidden="true" tabIndex={-1}>
+            <div className="wc-nav-btns" aria-hidden="true">
+              <button className="wc-nav-btn" type="button">
                 <FontAwesomeIcon icon={faChevronLeft} />
               </button>
-              <button className="wc-nav-btn" type="button" aria-hidden="true" tabIndex={-1}>
+              <button className="wc-nav-btn" type="button">
                 <FontAwesomeIcon icon={faChevronRight} />
               </button>
             </div>
           </div>
         </div>
 
-        <div className="wc-lower">
-          <aside className="wc-notes wc-notes--static">
+        <div className="wc-lower" aria-hidden="true" style={{ pointerEvents: 'none' }}>
+          <aside className="wc-notes">
             <div className="wc-notes-header">
-              <div className="wc-notes-collapse-btn" aria-hidden="true">
+              <div className="wc-notes-collapse-btn">
                 <div>
                   <p className="wc-notes-label">Notes</p>
-                  <p className="wc-notes-subtitle">Prepared month underneath the turning page</p>
+                  <p className="wc-notes-subtitle">Hover previews, click to edit</p>
                 </div>
-                <span className="wc-notes-chevron" style={{ opacity: 0 }}>
+                <span className={`wc-notes-chevron${notesOpen ? " wc-notes-chevron--open" : ""}`}>
                   <FontAwesomeIcon icon={faChevronDown} />
                 </span>
               </div>
-              <span className="wc-notes-toggle">{`${snapshot.monthNotesCount} saved`}</span>
+              <div className="wc-notes-toggle">
+                {showAllNotes ? "Focused editor" : `All saved (${snapshot.monthNotesCount})`}
+              </div>
             </div>
 
-            <div className="wc-notes-body wc-notes-body--open">
-              <div className="wc-notes-editor wc-notes-editor--static">
-                <p className="wc-notes-range">{`${SHORT_MONTHS[snapshot.month]} ${snapshot.year}`}</p>
-                <p className="wc-empty-editor">
-                  {snapshot.monthNotesCount
-                    ? `${snapshot.monthNotesCount} saved note ${snapshot.monthNotesCount === 1 ? "entry is" : "entries are"} ready for this month.`
-                    : "No saved notes for this month yet."}
-                </p>
-              </div>
+            <div className={`wc-notes-body${notesOpen ? " wc-notes-body--open" : ""}`}>
+              {showAllNotes ? (
+                <div style={{ padding: "0 24px", minHeight: "200px" }}>
+                  <p className="wc-empty-editor">Viewing all notes mode...</p>
+                </div>
+              ) : (
+                <div className="wc-notes-editor">
+                  <p className="wc-notes-range">{notesRangeLabel || "Select a date or range"}</p>
+                  <p className="wc-empty-editor">
+                    Use the grid to focus a date, then add a note here or preview notes inline on hover.
+                  </p>
+                </div>
+              )}
 
               <div className="wc-holidays">
                 <p className="wc-holidays-label">This month</p>
@@ -1280,14 +1299,30 @@ export default function WallCalendar({
             </div>
           </aside>
 
-          <div className="wc-grid-panel wc-grid-panel--static">
+          <div className="wc-grid-panel">
             <div className="wc-grid-topbar">
               <div className="wc-chip-row">
-                {showWeekNumbers && <div className="wc-chip wc-chip--active">Week numbers</div>}
-                <div className="wc-chip wc-chip--static">Month preloaded</div>
-                <div className="wc-chip wc-chip--static">{`${holidayEntries.length} holiday${holidayEntries.length === 1 ? "" : "s"}`}</div>
+                <button
+                  className={`wc-chip${showWeekNumbers ? " wc-chip--active" : ""}`}
+                  type="button"
+                >
+                  <FontAwesomeIcon icon={faCalendarWeek} />
+                  Week numbers
+                </button>
+                <div className="wc-chip wc-chip--static" style={{ padding: "0" }}>
+                  <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', height: '100%', padding: '0 8px' }} aria-hidden="true">
+                    <span style={{ marginRight: '6px', fontSize: '13px', fontWeight: '500' }}>Go to: </span>
+                    <input
+                      type="date"
+                      className="wc-goto-date"
+                      style={{ border: 'none', background: 'transparent', outline: 'none', fontFamily: 'inherit', fontSize: '13px', color: 'inherit', cursor: 'pointer' }}
+                      value={`${snapshot.year}-${String(snapshot.month + 1).padStart(2, '0')}-01`}
+                      readOnly
+                      tabIndex={-1}
+                    />
+                  </label>
+                </div>
               </div>
-              <p className="wc-art-label">{snapshot.monthStyle.destination} travel pick</p>
             </div>
 
             <div className={`wc-weekdays${showWeekNumbers ? " wc-weekdays--with-weeks" : ""}`}>
@@ -1336,6 +1371,14 @@ export default function WallCalendar({
                 </div>
               ))}
             </div>
+
+            <p className="wc-hint">{inlineHint}</p>
+            {selectionSummary && <p className="wc-summary">{selectionSummary}</p>}
+            {(rangeStart || rangeEnd) && (
+              <button className="wc-clear" type="button" aria-hidden="true" disabled>
+                Clear selection
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -1514,16 +1557,24 @@ export default function WallCalendar({
                     <FontAwesomeIcon icon={faCalendarWeek} />
                     Week numbers
                   </button>
-                  <div className="wc-chip wc-chip--static">
-                    <FontAwesomeIcon icon={faKeyboard} />
-                    Arrows + Enter
-                  </div>
-                  <div className="wc-chip wc-chip--static">
-                    <FontAwesomeIcon icon={faWandMagicSparkles} />
-                    Preloaded destinations
+                  <div className="wc-chip wc-chip--static" style={{ padding: "0" }}>
+                    <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', height: '100%', padding: '0 8px' }} aria-label="Go to date">
+                      <span style={{ marginRight: '6px', fontSize: '13px', fontWeight: '500' }}>Go to: </span>
+                      <input
+                        type="date"
+                        className="wc-goto-date"
+                        style={{ border: 'none', background: 'transparent', outline: 'none', fontFamily: 'inherit', fontSize: '13px', color: 'inherit', cursor: 'pointer' }}
+                        value={`${year}-${String(month + 1).padStart(2, '0')}-${String(focusedDay).padStart(2, '0')}`}
+                        onChange={(e) => {
+                          const date = new Date(e.target.value);
+                          if (!isNaN(date.getTime())) {
+                            goToMonth(date, date >= viewDate ? "next" : "prev", date.getDate());
+                          }
+                        }}
+                      />
+                    </label>
                   </div>
                 </div>
-                <p className="wc-art-label">{monthStyle.destination} travel pick</p>
               </div>
 
               <div className={`wc-weekdays${showWeekNumbers ? " wc-weekdays--with-weeks" : ""}`}>
